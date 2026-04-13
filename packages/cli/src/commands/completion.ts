@@ -18,10 +18,10 @@ _fsdk_completion() {
   cur="\${COMP_WORDS[COMP_CWORD]}"
   prev="\${COMP_WORDS[COMP_CWORD-1]}"
 
-  opts="create-app add-page add-component add-store sync-template validate preview completion"
+  opts="create add-page add-component add-store sync-template validate preview completion"
 
   case "\${prev}" in
-    create-app)
+    create)
       opts="--template --package-manager --eslint --no-git --no-install"
       ;;
     add-page)
@@ -58,7 +58,7 @@ const ZSH_COMPLETION = `#compdef fsdk
 
 local -a commands
 commands=(
-  'create-app:Create a new application'
+  'create:Create a new application'
   'add-page:Add a new page'
   'add-component:Add a new component'
   'add-store:Add a new store'
@@ -79,7 +79,7 @@ case "$state" in
     ;;
   args)
     case $words[1] in
-      create-app)
+      create)
         _arguments -s \\
           '--template[Template name]' \\
           '--package-manager[Package manager: npm|pnpm|yarn|bun]' \\
@@ -134,7 +134,7 @@ esac
 
 const FISH_COMPLETION = `# fish completion for fsdk
 
-complete -c fsdk -n '__fish_use_subcommand' -a 'create-app' -d 'Create a new application'
+complete -c fsdk -n '__fish_use_subcommand' -a 'create' -d 'Create a new application'
 complete -c fsdk -n '__fish_use_subcommand' -a 'add-page' -d 'Add a new page'
 complete -c fsdk -n '__fish_use_subcommand' -a 'add-component' -d 'Add a new component'
 complete -c fsdk -n '__fish_use_subcommand' -a 'add-store' -d 'Add a new store'
@@ -143,12 +143,12 @@ complete -c fsdk -n '__fish_use_subcommand' -a 'validate' -d 'Validate configura
 complete -c fsdk -n '__fish_use_subcommand' -a 'preview' -d 'Preview template'
 complete -c fsdk -n '__fish_use_subcommand' -a 'completion' -d 'Generate shell completion script'
 
-# create-app options
-complete -c fsdk -n '__fish_seen_subcommand_from create-app' -l template -d 'Template name'
-complete -c fsdk -n '__fish_seen_subcommand_from create-app' -l package-manager -d 'Package manager' -a 'npm pnpm yarn bun'
-complete -c fsdk -n '__fish_seen_subcommand_from create-app' -l eslint -d 'Enable ESLint'
-complete -c fsdk -n '__fish_seen_subcommand_from create-app' -l no-git -d 'Skip git initialization'
-complete -c fsdk -n '__fish_seen_subcommand_from create-app' -l no-install -d 'Skip dependency installation'
+# create options
+complete -c fsdk -n '__fish_seen_subcommand_from create' -l template -d 'Template name'
+complete -c fsdk -n '__fish_seen_subcommand_from create' -l package-manager -d 'Package manager' -a 'npm pnpm yarn bun'
+complete -c fsdk -n '__fish_seen_subcommand_from create' -l eslint -d 'Enable ESLint'
+complete -c fsdk -n '__fish_seen_subcommand_from create' -l no-git -d 'Skip git initialization'
+complete -c fsdk -n '__fish_seen_subcommand_from create' -l no-install -d 'Skip dependency installation'
 
 # add-page options
 complete -c fsdk -n '__fish_seen_subcommand_from add-page' -l router-path -d 'Router path'

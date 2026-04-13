@@ -20,13 +20,13 @@ export async function syncTemplate(cwd: string, options: SyncTemplateOptions = {
 
     if (!fs.existsSync(currentTemplatePath)) {
       logger.warning(`Template ${template} not found in .fsdk/template`);
-      logger.info('Run "fsdk create-app" first to initialize a template');
+      logger.info('Run "fsdk create" first to initialize a template');
       return;
     }
 
     const srcDir = path.resolve(cwd, 'src');
     if (!fs.existsSync(srcDir)) {
-      logger.error('src directory does not exist. Run "fsdk create-app" first.');
+      logger.error('src directory does not exist. Run "fsdk create" first.');
       return;
     }
 

@@ -2,7 +2,7 @@
 
 local -a commands
 commands=(
-  'create-app:Create a new application'
+  'create:Create a new application'
   'add-page:Add a new page'
   'add-component:Add a new component'
   'add-store:Add a new store'
@@ -23,7 +23,7 @@ case "$state" in
     ;;
   args)
     case $words[1] in
-      create-app)
+      create)
         _arguments -s \
           '--template[Template name]' \
           '--package-manager[Package manager: npm|pnpm|yarn|bun]' \

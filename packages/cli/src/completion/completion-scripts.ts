@@ -7,10 +7,10 @@ _fsdk_completion() {
   cur="\${COMP_WORDS[COMP_CWORD]}"
   prev="\${COMP_WORDS[COMP_CWORD-1]}"
 
-  opts="create-app add-page add-component add-store sync-template validate preview completion"
+  opts="create add-page add-component add-store sync-template validate preview completion"
 
   case "\${prev}" in
-    create-app)
+    create)
       opts="--template --package-manager --eslint --no-git --no-install"
       ;;
     add-page)
@@ -46,7 +46,7 @@ complete -F _fsdk_completion fsdk
 export const FISH_COMPLETION = `# fsdk fish completion
 
 function __fsdk_commands
-  echo "create-app\tCreate a new application"
+  echo "create\tCreate a new application"
   echo "add-page\t\tAdd a new page"
   echo "add-component\tAdd a new component"
   echo "add-store\tAdd a new store"
@@ -106,7 +106,7 @@ end
 
 complete -c fsdk -f -a "(__fsdk_commands)"
 
-complete -c fsdk -n "not __fish_seen_subcommand_from create-app" -a "(__fsdk_create_app_opts)" --option
+complete -c fsdk -n "not __fish_seen_subcommand_from create" -a "(__fsdk_create_app_opts)" --option
 complete -c fsdk -n "not __fish_seen_subcommand_from add-page" -a "(__fsdk_add_page_opts)" --option
 complete -c fsdk -n "not __fish_seen_subcommand_from add-component" -a "(__fsdk_add_component_opts)" --option
 complete -c fsdk -n "not __fish_seen_subcommand_from add-store" -a "(__fsdk_add_store_opts)" --option
@@ -120,7 +120,7 @@ export const ZSH_COMPLETION = `#compdef fsdk
 
 local -a commands
 commands=(
-  'create-app:Create a new application'
+  'create:Create a new application'
   'add-page:Add a new page'
   'add-component:Add a new component'
   'add-store:Add a new store'
@@ -141,7 +141,7 @@ case "$state" in
     ;;
   args)
     case $words[1] in
-      create-app)
+      create)
         _arguments -s \\
           '--template[Template name]' \\
           '--package-manager[Package manager: npm|pnpm|yarn|bun]' \\

@@ -7,10 +7,10 @@ _fsdk_completion() {
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-  opts="create-app add-page add-component add-store sync-template validate preview completion"
+  opts="create add-page add-component add-store sync-template validate preview completion"
 
   case "${prev}" in
-    create-app)
+    create)
       opts="--template --package-manager --eslint --no-git --no-install"
       ;;
     add-page)

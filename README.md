@@ -19,8 +19,8 @@ npm install -g @lumiflora/fsdk
 
 ```bash
 # 创建新项目
-fsdk create-app my-project              # 交互式创建
-fsdk create-app my-project --template full --package-manager pnpm
+fsdk create my-project              # 交互式创建
+fsdk create my-project --template full --package-manager pnpm
 
 # 添加页面
 fsdk add-page --page-name user --router-path /user
@@ -44,7 +44,7 @@ fsdk completion fish    # 输出到 ~/.config/fish/completions/fsdk.fish
 
 # 查看帮助
 fsdk --help
-fsdk create-app --help
+fsdk create --help
 ```
 
 ## 模板

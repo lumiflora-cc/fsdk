@@ -37,7 +37,7 @@ function createContext(cwd: string): PluginContext {
 }
 
 cli
-  .command('create-app [project-name]', 'Create a new application')
+  .command('create [project-name]', 'Create a new application')
   .option('--template <name>', 'Template name (base|full)')
   .option('--package-manager <pm>', 'Package manager (npm|pnpm|yarn|bun)', { default: 'pnpm' })
   .option('--eslint', 'Enable ESLint', { default: true })
@@ -50,7 +50,7 @@ cli
     logger.info('Creating new application...');
 
     const context = createContext(cwd);
-    await pluginSystem.execHook('beforeExec', context, 'create-app');
+    await pluginSystem.execHook('beforeExec', context, 'create');
 
     try {
       await createApp(cwd, {
@@ -62,9 +62,9 @@ cli
         install: !(options?.install === false),
       });
 
-      await pluginSystem.execHook('afterExec', context, 'create-app', { success: true });
+      await pluginSystem.execHook('afterExec', context, 'create', { success: true });
     } catch (error) {
-      await pluginSystem.execHook('afterExec', context, 'create-app', { success: false, error });
+      await pluginSystem.execHook('afterExec', context, 'create', { success: false, error });
       throw error;
     }
   });
@@ -230,7 +230,7 @@ Usage:
   $ fsdk <command> [options]
 
 Commands:
-  create-app [project-name]    Create a new application
+  create [project-name]    Create a new application
   add-page                      Add a new page
   add-component                 Add a new component
   add-store                     Add a new store

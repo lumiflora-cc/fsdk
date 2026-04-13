@@ -28,7 +28,7 @@ fsdk 是一个 Vue 3 前端项目脚手架 CLI 工具，用于快速创建包含
 | `src/core/template-engine.ts` | EJS 模板引擎 |
 | `src/core/config-loader.ts` | Zod 配置加载 |
 | `src/core/hot-reload.ts` | chokidar 热重载 |
-| `src/commands/create-app.ts` | 创建项目命令 |
+| `src/commands/create.ts` | 创建项目命令 |
 | `src/commands/add-page.ts` | 添加页面命令 |
 | `src/commands/add-component.ts` | 添加组件命令 |
 | `src/commands/add-store.ts` | 添加 Store 命令 |
@@ -67,7 +67,7 @@ $ pnpm exec tsx src/index.ts --version
 fsdk/0.1.0 linux-x64 node-v24.11.1
 
 # 创建项目
-$ pnpm exec tsx src/index.ts create-app
+$ pnpm exec tsx src/index.ts create
 [INFO] Creating new application...
 [? What is the project name? › my-app
 

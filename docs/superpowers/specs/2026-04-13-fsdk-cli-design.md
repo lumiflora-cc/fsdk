@@ -70,7 +70,7 @@ fsdk/
 │   ├── cli/                 # CLI 核心包
 │   │   ├── src/
 │   │   │   ├── commands/    # 各功能命令
-│   │   │   │   ├── create-app.ts
+│   │   │   │   ├── create.ts
 │   │   │   │   ├── add-page.ts
 │   │   │   │   ├── add-component.ts
 │   │   │   │   ├── add-store.ts
@@ -186,7 +186,7 @@ export interface PluginContext {
 
 ```bash
 # 创建新项目
-fsdk create-app <name> [options]
+fsdk create <name> [options]
   --template, -t <name>    模板名称 [default: full]
   --package-manager <pm>   包管理器 [npm|pnpm|yarn|bun] [default: pnpm]
   --eslint <level>        ESLint 级别 [strict|recommended|off] [default: strict]
@@ -440,7 +440,7 @@ pnpm dev
 # 编辑 packages/templates/full/...
 
 # 4. 测试创建项目
-fsdk create-app test-project
+fsdk create test-project
 
 # 5. 预览模板效果
 fsdk preview full
