@@ -6,10 +6,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const templatesBasePath = join(__dirname, '../../../packages/templates');
 
+interface TemplateComponent {
+  name: string;
+  path: string;
+  content: string;
+}
+
+interface CachedTemplate {
+  type: string;
+  path: string;
+  components: TemplateComponent[];
+}
+
 /**
  * 模板缓存
  */
-const templateCache = new Map();
+const templateCache = new Map<string, CachedTemplate>();
 
 /**
  * 当前选中的模板类型
@@ -19,8 +31,8 @@ let currentTemplateType = 'full';
 /**
  * 加载模板列表
  */
-export function getTemplateList() {
-  const templates = [];
+export function getTemplateList(): Array<{ name: string; path: string; components: TemplateComponent[] }> {
+  const templates: Array<{ name: string; path: string; components: TemplateComponent[] }> = [];
   const fullPath = join(templatesBasePath, 'full');
   const basePath = join(templatesBasePath, 'base');
 
@@ -36,28 +48,28 @@ export function getTemplateList() {
 
 /**
  * 加载模板组件
- * @param {string} templateType - 模板类型 (full/base)
+ * @param templateType - 模板类型 (full/base)
  */
-export async function loadTemplateComponents(templateType) {
+export async function loadTemplateComponents(templateType: string): Promise<CachedTemplate> {
   const templatePath = join(templatesBasePath, templateType);
-  
+
   if (!existsSync(templatePath)) {
     throw new Error(`Template not found: ${templateType}`);
   }
 
   const cacheKey = `template_${templateType}`;
-  
+
   if (templateCache.has(cacheKey)) {
-    return templateCache.get(cacheKey);
+    return templateCache.get(cacheKey)!;
   }
 
   try {
-    const files = readdirSync(templatePath).filter(f => 
+    const files = readdirSync(templatePath).filter(f =>
       f.endsWith('.vue') || f.endsWith('.js') || f.endsWith('.ts')
     );
 
-    const components = [];
-    
+    const components: TemplateComponent[] = [];
+
     for (const file of files) {
       const filePath = join(templatePath, file);
       const content = readFileSync(filePath, 'utf-8');
@@ -68,7 +80,7 @@ export async function loadTemplateComponents(templateType) {
       });
     }
 
-    const result = {
+    const result: CachedTemplate = {
       type: templateType,
       path: templatePath,
       components
@@ -85,9 +97,9 @@ export async function loadTemplateComponents(templateType) {
 
 /**
  * 切换模板类型
- * @param {string} type - 模板类型
+ * @param type - 模板类型
  */
-export function switchTemplateType(type) {
+export function switchTemplateType(type: string): void {
   currentTemplateType = type;
   console.log(`[TemplateLoader] Switched to template type: ${type}`);
 }
@@ -95,17 +107,17 @@ export function switchTemplateType(type) {
 /**
  * 获取当前模板类型
  */
-export function getCurrentTemplateType() {
+export function getCurrentTemplateType(): string {
   return currentTemplateType;
 }
 
 /**
  * 加载所有模板
  */
-export async function loadTemplates() {
+export async function loadTemplates(): Promise<void> {
   const templates = getTemplateList();
   console.log(`[TemplateLoader] Found ${templates.length} templates:`, templates.map(t => t.name));
-  
+
   for (const template of templates) {
     await loadTemplateComponents(template.name);
   }
@@ -113,13 +125,13 @@ export async function loadTemplates() {
 
 /**
  * 获取模板内容用于预览
- * @param {string} templateType - 模板类型
- * @param {string} componentName - 组件名称
+ * @param templateType - 模板类型
+ * @param componentName - 组件名称
  */
-export function getTemplateContent(templateType, componentName) {
+export function getTemplateContent(templateType: string, componentName: string): string | null {
   const cacheKey = `template_${templateType}`;
   const cached = templateCache.get(cacheKey);
-  
+
   if (!cached) {
     return null;
   }

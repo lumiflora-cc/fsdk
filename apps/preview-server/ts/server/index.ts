@@ -9,10 +9,19 @@ const rootDir = join(__dirname, '../');
 
 const port = parseInt(process.argv.find(arg => arg.startsWith('--port='))?.split('=')[1] || '3000');
 
+interface SSEClient {
+  write(message: string): void;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var sseClients: SSEClient[] | undefined;
+}
+
 /**
  * 创建 SSE 连接用于热重载
  */
-function createSSEClient(req, res) {
+function createSSEClient(req: http.IncomingMessage, res: http.ServerResponse): void {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -30,20 +39,20 @@ function createSSEClient(req, res) {
   global.sseClients.push(res);
 
   req.on('close', () => {
-    global.sseClients = global.sseClients.filter(client => client !== res);
+    global.sseClients = global.sseClients!.filter(client => client !== res);
   });
 }
 
 /**
  * 通知所有 SSE 客户端
  */
-export function notifyClients(data) {
+export function notifyClients(data: Record<string, unknown>): void {
   if (global.sseClients) {
     const message = `data: ${JSON.stringify(data)}\n\n`;
     global.sseClients.forEach(client => {
       try {
         client.write(message);
-      } catch (e) {
+      } catch {
         // 忽略已关闭的连接
       }
     });
@@ -53,7 +62,7 @@ export function notifyClients(data) {
 /**
  * 创建预览服务器
  */
-export function createServer(port) {
+export function createServer(port: number): http.Server {
   const server = http.createServer((req, res) => {
     // SSE 端点
     if (req.url === '/sse') {
@@ -71,19 +80,19 @@ export function createServer(port) {
     }
 
     // 静态资源
-    if (req.url.startsWith('/preview/')) {
+    if (req.url?.startsWith('/preview/')) {
       const filePath = join(rootDir, req.url);
       // 返回静态文件
       import('fs').then(fs => {
         if (fs.existsSync(filePath)) {
           const ext = filePath.split('.').pop();
-          const contentType = {
+          const contentType: Record<string, string> = {
             'html': 'text/html',
             'js': 'application/javascript',
             'css': 'text/css',
             'vue': 'application/javascript'
-          }[ext] || 'text/plain';
-          res.writeHead(200, { 'Content-Type': contentType });
+          };
+          res.writeHead(200, { 'Content-Type': contentType[ext || ''] || 'text/plain' });
           res.end(fs.readFileSync(filePath));
         } else {
           res.writeHead(404);
@@ -112,8 +121,8 @@ export function createServer(port) {
 /**
  * 启动预览服务器
  */
-export async function startServer() {
-  const { createServer } = await import('vite');
+export async function startServer(): Promise<{ sseServer: http.Server; watcher: unknown }> {
+  const { createServer: createViteServer } = await import('vite');
   const { watchTemplates } = await import('./watcher.js');
   const { loadTemplates } = await import('./template-loader.js');
 
@@ -122,9 +131,9 @@ export async function startServer() {
 
   // 启动 SSE 服务器
   const sseServer = createServer(port);
-  
+
   // 启动模板监听
-  const watcher = await watchTemplates((event, path) => {
+  const watcher = await watchTemplates((event: string, path: string) => {
     console.log(`[Watcher] ${event}: ${path}`);
     notifyClients({ type: 'reload', event, path, timestamp: Date.now() });
   });

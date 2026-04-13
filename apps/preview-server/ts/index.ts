@@ -4,12 +4,12 @@ import { startServer } from './server/index.js';
 
 const port = parseInt(process.argv.find(arg => arg.startsWith('--port='))?.split('=')[1] || '3000');
 
-async function main() {
+async function main(): Promise<void> {
   try {
     console.log('\n🚀 Starting Lumiflora FSDK Preview Server...\n');
-    
+
     const { sseServer } = await startServer();
-    
+
     sseServer.listen(port, '0.0.0.0', () => {
       console.log(`\n✨ Preview server is ready at http://localhost:${port}\n`);
     });
