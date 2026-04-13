@@ -54,9 +54,6 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
 
     await templateEngine.copyPublicFiles(template, projectPath);
 
-    if (spinner) spinner.text = 'Initializing package.json...';
-    await initializePackageJson(projectPath, projectName, packageManager);
-
     if (git) {
       if (spinner) spinner.text = 'Initializing git repository...';
       try {
@@ -106,8 +103,8 @@ async function resolveOptions(options: CreateAppOptions, cwd: string): Promise<R
       name: 'template',
       message: 'Select a template',
       choices: [
-        { title: 'Base', value: 'base', description: 'Basic template with minimal setup' },
-        { title: 'Full', value: 'full', description: 'Full-featured template with all components' },
+        { title: 'Base', value: 'base', description: 'Basic template with Vite' },
+        { title: 'Full', value: 'full', description: 'Full-featured template with Vite + Element Plus + Pinia' },
       ],
       initial: 0,
     },
@@ -151,28 +148,6 @@ async function resolveOptions(options: CreateAppOptions, cwd: string): Promise<R
     git: options.git ?? responses.git,
     install: options.install ?? responses.install,
   };
-}
-
-async function initializePackageJson(
-  projectPath: string,
-  projectName: string,
-  packageManager: string
-): Promise<void> {
-  const packageJson = {
-    name: projectName,
-    version: '0.1.0',
-    private: true,
-    type: 'module',
-    scripts: {
-      dev: 'fsdk dev',
-      build: 'fsdk build',
-      preview: 'fsdk preview',
-    },
-    dependencies: {},
-    devDependencies: {},
-  };
-
-  await fs.writeJson(path.resolve(projectPath, 'package.json'), packageJson, { spaces: 2 });
 }
 
 async function spawnCommand(cmd: string, args: string[], cwd: string): Promise<void> {
