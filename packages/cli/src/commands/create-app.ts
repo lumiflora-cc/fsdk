@@ -16,22 +16,30 @@ export interface CreateAppOptions {
 }
 
 export async function createApp(cwd: string, options: CreateAppOptions = {}): Promise<void> {
-  const spinner = ora('Initializing project...').start();
+  // First resolve options to determine if interactive mode
+  const resolvedOptions = await resolveOptions(options, cwd);
+  const { projectName, template, packageManager, eslint, git, install } = resolvedOptions;
+  const projectPath = path.resolve(cwd, projectName);
+  const isInteractive = !options.template;
+
+  // Only show info log in non-interactive mode
+  if (!isInteractive) {
+    logger.info('Creating new application...');
+  }
+
+  // Only use spinner in non-interactive mode (when template is provided)
+  const spinner = isInteractive ? null : ora('Creating project...').start();
 
   try {
-    const resolvedOptions = await resolveOptions(options, cwd);
-    const { projectName, template, packageManager, eslint, git, install } = resolvedOptions;
-    const projectPath = path.resolve(cwd, projectName);
-
     if (fs.existsSync(projectPath)) {
-      spinner.fail(`Directory ${projectName} already exists`);
+      if (spinner) spinner.fail(`Directory ${projectName} already exists`);
       throw new Error(`Directory ${projectName} already exists`);
     }
 
-    spinner.text = 'Creating project structure...';
+    if (spinner) spinner.text = 'Creating project structure...';
     await fs.ensureDir(projectPath);
 
-    spinner.text = 'Rendering template files...';
+    if (spinner) spinner.text = 'Rendering template files...';
     await templateEngine.renderDirectory({
       templateName: template,
       outputDir: projectPath,
@@ -46,11 +54,11 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
 
     await templateEngine.copyPublicFiles(template, projectPath);
 
-    spinner.text = 'Initializing package.json...';
+    if (spinner) spinner.text = 'Initializing package.json...';
     await initializePackageJson(projectPath, projectName, packageManager);
 
     if (git) {
-      spinner.text = 'Initializing git repository...';
+      if (spinner) spinner.text = 'Initializing git repository...';
       try {
         await spawnCommand('git', ['init'], projectPath);
       } catch {
@@ -59,14 +67,14 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
     }
 
     if (install) {
-      spinner.text = `Installing dependencies with ${packageManager}...`;
+      if (spinner) spinner.text = `Installing dependencies with ${packageManager}...`;
       await spawnCommand(packageManager, ['install'], projectPath);
     }
 
-    spinner.succeed(`Project ${projectName} created successfully!`);
+    if (spinner) spinner.succeed(`Project ${projectName} created successfully!`);
     logger.info(`cd ${projectName} to start developing`);
   } catch (error) {
-    spinner.fail('Failed to create project');
+    if (spinner) spinner.fail('Failed to create project');
     throw error;
   }
 }
