@@ -38,7 +38,7 @@ function createContext(cwd: string): PluginContext {
 
 cli
   .command('create-app [project-name]', 'Create a new application')
-  .option('--template <name>', 'Template name (base|full)', { default: 'base' })
+  .option('--template <name>', 'Template name (base|full)')
   .option('--package-manager <pm>', 'Package manager (npm|pnpm|yarn|bun)', { default: 'pnpm' })
   .option('--eslint', 'Enable ESLint', { default: true })
   .option('--no-git', 'Skip git initialization', { default: false })

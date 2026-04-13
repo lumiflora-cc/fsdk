@@ -72,6 +72,7 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
 }
 
 async function resolveOptions(options: CreateAppOptions, cwd: string): Promise<Required<CreateAppOptions>> {
+  // If all required options are provided, use them directly (non-interactive mode)
   if (options.projectName && options.template) {
     return {
       projectName: options.projectName,
@@ -83,6 +84,7 @@ async function resolveOptions(options: CreateAppOptions, cwd: string): Promise<R
     };
   }
 
+  // Otherwise, enter interactive mode
   const responses = await prompts([
     {
       type: 'text',
