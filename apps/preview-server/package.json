@@ -1,0 +1,16 @@
+{
+  "name": "@lumiflora/fsdk-preview-server",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "vite": "^6.0.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "chokidar": "^3.5.3",
+    "vue": "^3.4.0"
+  }
+}
