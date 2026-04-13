@@ -11,6 +11,15 @@ export interface AddPageOptions {
 }
 
 export async function addPage(cwd: string, options: AddPageOptions = {}): Promise<void> {
+  // Early check: if pageName is provided, verify directory doesn't exist
+  if (options.pageName) {
+    const pageDir = path.resolve(cwd, 'src', 'views', options.pageName);
+    if (fs.existsSync(pageDir)) {
+      logger.error(`Page directory ${options.pageName} already exists`);
+      throw new Error(`Page directory ${options.pageName} already exists`);
+    }
+  }
+
   try {
     const resolvedOptions = await resolveOptions(options);
     const { pageName, routerPath } = resolvedOptions;
@@ -24,8 +33,10 @@ export async function addPage(cwd: string, options: AddPageOptions = {}): Promis
     await fs.ensureDir(pageDir);
 
     const pageTemplate = generatePageTemplate(pageName, routerPath);
-    await fs.writeFile(path.resolve(pageDir, 'index.vue'), pageTemplate.page);
-    await fs.writeFile(path.resolve(pageDir, 'index.less'), pageTemplate.styles);
+    await Promise.all([
+      fs.writeFile(path.resolve(pageDir, 'index.vue'), pageTemplate.page),
+      fs.writeFile(path.resolve(pageDir, 'index.less'), pageTemplate.styles),
+    ]);
 
     logger.success(`Page ${pageName} created at src/views/${pageName}/`);
     logger.info(`Router path: ${routerPath}`);
@@ -55,7 +66,7 @@ async function resolveOptions(options: AddPageOptions): Promise<{ pageName: stri
       type: 'text',
       name: 'routerPath',
       message: 'Enter the router path:',
-      initial: (prev: string) => `/${prev.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')}`,
+      initial: (prev: string) => `/${toKebabCase(prev)}`,
     },
   ]);
 

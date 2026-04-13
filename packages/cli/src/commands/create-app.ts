@@ -1,10 +1,9 @@
 import prompts from 'prompts';
 import fs from 'fs-extra';
 import path from 'path';
-import { logger } from '../utils/index.js';
+import { logger, Spinner, getTemplatesRoot } from '../utils/index.js';
 import { templateEngine } from '../core/index.js';
 import { spawn } from 'child_process';
-import ora from 'ora';
 
 export interface CreateAppOptions {
   template?: string;
@@ -16,6 +15,15 @@ export interface CreateAppOptions {
 }
 
 export async function createApp(cwd: string, options: CreateAppOptions = {}): Promise<void> {
+  // Early check: if projectName is provided, verify directory doesn't exist
+  // This avoids wasting user time with prompts if directory already exists
+  if (options.projectName) {
+    const projectPath = path.resolve(cwd, options.projectName);
+    if (fs.existsSync(projectPath)) {
+      throw new Error(`Directory ${options.projectName} already exists`);
+    }
+  }
+
   // First resolve options to determine if interactive mode
   const resolvedOptions = await resolveOptions(options, cwd);
   const { projectName, template, packageManager, eslint, git, install } = resolvedOptions;
@@ -28,21 +36,42 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
   }
 
   // Only use spinner in non-interactive mode (when template is provided)
-  const spinner = isInteractive ? null : ora('Creating project...').start();
+  const spinner = new Spinner(!isInteractive, 'Creating project...');
 
   try {
     if (fs.existsSync(projectPath)) {
-      if (spinner) spinner.fail(`Directory ${projectName} already exists`);
+      spinner.fail(`Directory ${projectName} already exists`);
       throw new Error(`Directory ${projectName} already exists`);
     }
 
-    if (spinner) spinner.text = 'Creating project structure...';
+    spinner.text = 'Creating project structure...';
     await fs.ensureDir(projectPath);
 
-    if (spinner) spinner.text = 'Rendering template files...';
+    // Copy root template files (package.json, tsconfig, vite.config, etc.)
+    const rootTemplatePath = path.resolve(getTemplatesRoot(), template);
+    const rootFiles = ['package.json', 'tsconfig.json', 'tsconfig.app.json', 'vite.config.ts', 'index.html', '.gitignore', 'eslint.config.mjs'];
+    await Promise.all(
+      rootFiles.map(async (file) => {
+        const source = path.resolve(rootTemplatePath, file);
+        const dest = path.resolve(projectPath, file);
+        if (await fs.pathExists(source)) {
+          await fs.copy(source, dest);
+          // Update package.json name to project name
+          if (file === 'package.json') {
+            const pkg = await fs.readJson(dest);
+            pkg.name = projectName;
+            await fs.writeJson(dest, pkg, { spaces: 2 });
+          }
+        }
+      })
+    );
+
+    // Render src template files
+    spinner.text = 'Rendering template files...';
     await templateEngine.renderDirectory({
       templateName: template,
-      outputDir: projectPath,
+      templateDir: 'src',
+      outputDir: path.resolve(projectPath, 'src'),
       data: {
         projectName,
         packageManager,
@@ -55,7 +84,7 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
     await templateEngine.copyPublicFiles(template, projectPath);
 
     if (git) {
-      if (spinner) spinner.text = 'Initializing git repository...';
+      spinner.text = 'Initializing git repository...';
       try {
         await spawnCommand('git', ['init'], projectPath);
       } catch {
@@ -64,14 +93,14 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
     }
 
     if (install) {
-      if (spinner) spinner.text = `Installing dependencies with ${packageManager}...`;
+      spinner.text = `Installing dependencies with ${packageManager}...`;
       await spawnCommand(packageManager, ['install'], projectPath);
     }
 
-    if (spinner) spinner.succeed(`Project ${projectName} created successfully!`);
+    spinner.succeed(`Project ${projectName} created successfully!`);
     logger.info(`cd ${projectName} to start developing`);
   } catch (error) {
-    if (spinner) spinner.fail('Failed to create project');
+    spinner.fail('Failed to create project');
     throw error;
   }
 }

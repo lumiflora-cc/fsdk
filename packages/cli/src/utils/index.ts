@@ -7,3 +7,4 @@ export {
   toKebabCase,
   toCamelCase,
 } from './command-helpers.js';
+export { Spinner } from './spinner.js';

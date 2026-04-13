@@ -18,9 +18,11 @@ export async function addComponent(cwd: string, options: AddComponentOptions = {
     await fs.ensureDir(componentDir);
 
     const componentTemplate = generateComponentTemplate(name, type);
-    await fs.writeFile(path.resolve(componentDir, `${name}.vue`), componentTemplate.component);
-    await fs.writeFile(path.resolve(componentDir, `${name}.less`), componentTemplate.styles);
-    await fs.writeFile(path.resolve(componentDir, `index.ts`), componentTemplate.index);
+    await Promise.all([
+      fs.writeFile(path.resolve(componentDir, `${name}.vue`), componentTemplate.component),
+      fs.writeFile(path.resolve(componentDir, `${name}.less`), componentTemplate.styles),
+      fs.writeFile(path.resolve(componentDir, `index.ts`), componentTemplate.index),
+    ]);
 
     logger.success(`Component ${name} created at src/components/${type}/${dir || name}/`);
   } catch (error) {

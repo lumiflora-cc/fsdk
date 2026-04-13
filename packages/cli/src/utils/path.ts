@@ -37,16 +37,24 @@ export function getCliRoot(): string {
   return _cliRoot;
 }
 
+// Cached path roots
+let _templatesRoot: string | undefined;
+let _pluginsRoot: string | undefined;
+
 export function getTemplatesRoot(): string {
-  // Templates are at packages/templates relative to the workspace root
-  const cliRoot = getCliRoot();
-  return path.resolve(cliRoot, '..', 'templates');
+  if (_templatesRoot) {
+    return _templatesRoot;
+  }
+  _templatesRoot = path.resolve(getCliRoot(), '..', 'templates');
+  return _templatesRoot;
 }
 
 export function getPluginsRoot(): string {
-  // Plugins are at packages/plugins relative to the workspace root
-  const cliRoot = getCliRoot();
-  return path.resolve(cliRoot, '..', 'plugins');
+  if (_pluginsRoot) {
+    return _pluginsRoot;
+  }
+  _pluginsRoot = path.resolve(getCliRoot(), '..', 'plugins');
+  return _pluginsRoot;
 }
 
 export function resolveTemplatePath(templateName: string, ...segments: string[]): string {

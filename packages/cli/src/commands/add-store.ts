@@ -17,8 +17,10 @@ export async function addStore(cwd: string, options: AddStoreOptions = {}): Prom
     await fs.ensureDir(storeDir);
 
     const storeTemplate = generateStoreTemplate(name, type);
-    await fs.writeFile(path.resolve(storeDir, `${name}.ts`), storeTemplate.store);
-    await fs.writeFile(path.resolve(storeDir, `${name}.test.ts`), storeTemplate.test);
+    await Promise.all([
+      fs.writeFile(path.resolve(storeDir, `${name}.ts`), storeTemplate.store),
+      fs.writeFile(path.resolve(storeDir, `${name}.test.ts`), storeTemplate.test),
+    ]);
 
     logger.success(`Store ${name} created at src/stores/`);
   } catch (error) {
