@@ -1,11 +1,14 @@
 {
   "name": "@lumiflora/fsdk",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "fsdk": "./dist/index.js"
+    "fsdk": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc && node scripts/fix-bin.js",
