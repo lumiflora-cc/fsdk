@@ -204,10 +204,12 @@ cli
 cli
   .command('completion [shell]', 'Generate shell completion script')
   .option('--output <path>', 'Output path')
+  .option('--install', 'Automatically install completion to shell config')
   .action(async (shell?: string, options?: Record<string, unknown>) => {
     await generateCompletion({
       shell: shell as 'bash' | 'zsh' | 'fish' | undefined,
       output: options?.output as string,
+      install: options?.install as boolean,
     });
   });
 

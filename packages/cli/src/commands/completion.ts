@@ -7,6 +7,7 @@ export type ShellType = 'bash' | 'zsh' | 'fish';
 export interface CompletionOptions {
   shell?: ShellType;
   output?: string;
+  install?: boolean;
 }
 
 const BASH_COMPLETION = `#!/bin/bash
@@ -54,82 +55,90 @@ _fsdk_completion() {
 complete -F _fsdk_completion fsdk
 `;
 
-const ZSH_COMPLETION = `#compdef fsdk
+const ZSH_COMPLETION = `#fsdk completion
+autoload -Uz compinit
+compinit 2>/dev/null
 
-local -a commands
-commands=(
-  'create:Create a new application'
-  'add-page:Add a new page'
-  'add-component:Add a new component'
-  'add-store:Add a new store'
-  'sync-template:Sync template files'
-  'validate:Validate configuration and templates'
-  'preview:Preview template'
-  'completion:Generate shell completion script'
-)
+# Define the completion function
+_fsdk() {
+  local -a _fsdk_cmds
+  _fsdk_cmds=(
+    'create:Create a new application'
+    'add-page:Add a new page'
+    'add-component:Add a new component'
+    'add-store:Add a new store'
+    'sync-template:Sync template files'
+    'validate:Validate configuration and templates'
+    'preview:Preview template'
+    'completion:Generate shell completion script'
+  )
 
-_arguments -C \\
-  '1: :->command' \\
-  '2: :->args' \\
-  '*: :->rest'
+  _arguments -C \\
+    '1: :->command' \\
+    '2: :->args' \\
+    '*: :->rest'
 
-case "$state" in
-  command)
-    _describe 'command' commands
-    ;;
-  args)
-    case $words[1] in
-      create)
-        _arguments -s \\
-          '--template[Template name]' \\
-          '--package-manager[Package manager: npm|pnpm|yarn|bun]' \\
-          '--eslint[Enable ESLint]' \\
-          '--no-git[Skip git initialization]' \\
-          '--no-install[Skip dependency installation]'
-        ;;
-      add-page)
-        _arguments -s \\
-          '--router-path[Router path]' \\
-          '--page-name[Page name]'
-        ;;
-      add-component)
-        _arguments -s \\
-          '--type[Component type: page|common|business]' \\
-          '--name[Component name]' \\
-          '--dir[Subdirectory]'
-        ;;
-      add-store)
-        _arguments -s \\
-          '--type[Store type: pinia|redux]' \\
-          '--name[Store name]'
-        ;;
-      sync-template)
-        _arguments -s \\
-          '--template[Template name]' \\
-          '--force[Force sync]'
-        ;;
-      validate)
-        _arguments -s \\
-          '--config[Validate config only]' \\
-          '--templates[Validate templates only]' \\
-          '--strict[Strict validation]'
-        ;;
-      preview)
-        _arguments -s \\
-          '--port[Port number]' \\
-          '--host[Host address]' \\
-          '--open[Open browser]' \\
-          '--template[Template name]'
-        ;;
-      completion)
-        _arguments -s \\
-          'bash:Generate bash completion' \\
-          'zsh:Generate zsh completion' \\
-          'fish:Generate fish completion'
-        ;;
-    esac
-    ;;
-esac
+  case "$state" in
+    command)
+      _describe 'command' _fsdk_cmds
+      ;;
+    args)
+      case $words[1] in
+        create)
+          _arguments -s \\
+            '--template[Template name]' \\
+            '--package-manager[Package manager: npm|pnpm|yarn|bun]' \\
+            '--eslint[Enable ESLint]' \\
+            '--no-git[Skip git initialization]' \\
+            '--no-install[Skip dependency installation]'
+          ;;
+        add-page)
+          _arguments -s \\
+            '--router-path[Router path]' \\
+            '--page-name[Page name]'
+          ;;
+        add-component)
+          _arguments -s \\
+            '--type[Component type: page|common|business]' \\
+            '--name[Component name]' \\
+            '--dir[Subdirectory]'
+          ;;
+        add-store)
+          _arguments -s \\
+            '--type[Store type: pinia|redux]' \\
+            '--name[Store name]'
+          ;;
+        sync-template)
+          _arguments -s \\
+            '--template[Template name]' \\
+            '--force[Force sync]'
+          ;;
+        validate)
+          _arguments -s \\
+            '--config[Validate config only]' \\
+            '--templates[Validate templates only]' \\
+            '--strict[Strict validation]'
+          ;;
+        preview)
+          _arguments -s \\
+            '--port[Port number]' \\
+            '--host[Host address]' \\
+            '--open[Open browser]' \\
+            '--template[Template name]'
+          ;;
+        completion)
+          _arguments -s \\
+            'bash:Generate bash completion' \\
+            'zsh:Generate zsh completion' \\
+            'fish:Generate fish completion'
+          ;;
+      esac
+      ;;
+  esac
+}
+
+# Register the completion function for fsdk command
+compdef _fsdk fsdk
 `;
 
 const FISH_COMPLETION = `# fish completion for fsdk
@@ -182,6 +191,7 @@ complete -c fsdk -n '__fish_seen_subcommand_from preview' -l template -d 'Templa
 export async function generateCompletion(options: CompletionOptions = {}): Promise<void> {
   const shell = options.shell || detectShell();
   const outputPath = options.output || getDefaultOutputPath(shell);
+  const install = options.install || false;
 
   try {
     const content = getCompletionScript(shell);
@@ -194,15 +204,54 @@ export async function generateCompletion(options: CompletionOptions = {}): Promi
 
     logger.success(`Completion script for ${shell} generated at ${outputPath}`);
 
-    if (shell !== 'fish') {
-      logger.info(`Add the following line to your shell configuration:`);
-      logger.info(`  source ${outputPath}`);
-    } else {
-      logger.info(`Add the following line to your fish config:`);
-      logger.info(`  source ${outputPath}`);
+    if (install && shell !== 'fish') {
+      await installToShellRc(shell, outputPath);
+    } else if (!install) {
+      if (shell !== 'fish') {
+        logger.info(`Add the following line to your shell configuration:`);
+        logger.info(`  source ${outputPath}`);
+      } else {
+        logger.info(`Add the following line to your fish config:`);
+        logger.info(`  source ${outputPath}`);
+      }
     }
   } catch (error) {
     logger.error('Failed to generate completion script:', error);
+    throw error;
+  }
+}
+
+async function installToShellRc(shell: ShellType, completionPath: string): Promise<void> {
+  const home = process.env.HOME || '';
+  let rcFile = '';
+  let sourceLine = `source ${completionPath}`;
+
+  if (shell === 'bash') {
+    rcFile = path.resolve(home, '.bashrc');
+  } else if (shell === 'zsh') {
+    rcFile = path.resolve(home, '.zshrc');
+  } else {
+    logger.warning(`--install is not supported for fish shell yet`);
+    return;
+  }
+
+  try {
+    let rcContent = '';
+    if (await fs.pathExists(rcFile)) {
+      rcContent = await fs.readFile(rcFile, 'utf-8');
+    }
+
+    const pattern = shell === 'bash' ? /\.fsdk-completion/ : 'fsdk-completion';
+    if (rcContent.includes(pattern as string)) {
+      logger.info(`Completion already installed in ${rcFile}`);
+      return;
+    }
+
+    await fs.appendFile(rcFile, `\n# fsdk completion\n${sourceLine}\n`);
+    logger.success(`Completion installed to ${rcFile}`);
+    logger.info(`Run "source ${rcFile}" or restart your shell to apply`);
+  } catch (error) {
+    logger.error(`Failed to install completion to ${rcFile}:`, error);
     throw error;
   }
 }

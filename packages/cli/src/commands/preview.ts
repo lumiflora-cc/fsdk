@@ -5,6 +5,7 @@ import path from 'path';
 import { logger } from '../utils/index.js';
 import { templateEngine } from '../core/index.js';
 import { hotReload } from '../core/index.js';
+import { resolveTemplatePath } from '../utils/path.js';
 
 export interface PreviewOptions {
   port?: number;
@@ -16,6 +17,7 @@ export interface PreviewOptions {
 export async function preview(cwd: string, options: PreviewOptions = {}): Promise<void> {
   const port = options.port || 3000;
   const host = options.host || 'localhost';
+  const templateName = options.template || 'base';
 
   try {
     const previewServerDir = path.resolve(cwd, '.fsdk', 'preview-temp');
@@ -23,14 +25,23 @@ export async function preview(cwd: string, options: PreviewOptions = {}): Promis
 
     logger.info(`Preparing preview server at http://${host}:${port}`);
 
-    await templateEngine.renderDirectory({
-      templateName: options.template || 'base',
-      outputDir: previewServerDir,
-      data: {
-        port,
-        host,
-      },
-    });
+    // 监听模板源文件目录
+    const templateSrcDir = resolveTemplatePath(templateName, 'src');
+    const templatePublicDir = resolveTemplatePath(templateName, 'public');
+
+    const renderTemplate = async () => {
+      logger.info(`Re-rendering template: ${templateName}`);
+      await templateEngine.renderDirectory({
+        templateName,
+        outputDir: previewServerDir,
+        data: { port, host },
+      });
+      await templateEngine.copyPublicFiles(templateName, previewServerDir);
+      logger.success('Template re-rendered');
+    };
+
+    // 初始渲染
+    await renderTemplate();
 
     await startPreviewServer(previewServerDir, port, host);
 
@@ -40,9 +51,11 @@ export async function preview(cwd: string, options: PreviewOptions = {}): Promis
     }
 
     await hotReload.start({
-      watchPaths: [previewServerDir],
-      onChange: (event, file) => {
-        logger.info(`File ${event}: ${path.relative(previewServerDir, file)}`);
+      watchPaths: [templateSrcDir, templatePublicDir],
+      ignored: ['**/node_modules/**', '**/.git/**'],
+      onChange: async (event, file) => {
+        logger.info(`Template ${event}: ${path.relative(templateSrcDir, file) || path.relative(templatePublicDir, file)}`);
+        await renderTemplate();
       },
     });
 
