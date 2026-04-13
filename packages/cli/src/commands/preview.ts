@@ -1,5 +1,6 @@
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
 import fs from 'fs-extra';
+import http from 'http';
 import path from 'path';
 import { logger } from '../utils/index.js';
 import { templateEngine } from '../core/index.js';
@@ -34,8 +35,8 @@ export async function preview(cwd: string, options: PreviewOptions = {}): Promis
     await startPreviewServer(previewServerDir, port, host);
 
     if (options.open) {
-      const openCmd = process.platform === 'win32' ? 'start' : 'open';
-      execSync(`${openCmd} http://${host}:${port}`, { stdio: 'ignore' });
+      const openCmd = process.platform === 'win32' ? 'start' : (process.platform === 'darwin' ? 'open' : 'xdg-open');
+      spawn(openCmd, [`http://${host}:${port}`], { stdio: 'ignore', detached: true, shell: true });
     }
 
     await hotReload.start({
@@ -60,7 +61,80 @@ async function startPreviewServer(serverDir: string, port: number, host: string)
     await fs.writeFile(indexPath, html);
   }
 
-  logger.info(`Preview server running at http://${host}:${port}`);
+  return new Promise<void>((resolve, reject) => {
+    const server = http.createServer(async (req, res) => {
+      try {
+        // Serve index.html for root path
+        if (req.url === '/' || req.url === '/index.html') {
+          const content = await fs.readFile(indexPath, 'utf-8');
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(content);
+          return;
+        }
+
+        // Try to serve static files
+        const filePath = path.join(serverDir, req.url || '');
+        if (await fs.pathExists(filePath)) {
+          const ext = path.extname(filePath);
+          const contentType = getContentType(ext);
+          const content = await fs.readFile(filePath);
+
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(content);
+          return;
+        }
+
+        // 404 for unknown paths
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
+      } catch (error) {
+        logger.error('Error serving file:', error);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal Server Error');
+      }
+    });
+
+    server.listen(port, host, () => {
+      logger.info(`Preview server running at http://${host}:${port}`);
+
+      // Handle graceful shutdown
+      server.on('close', () => {
+        logger.debug('Preview server closed');
+      });
+
+      resolve();
+    });
+
+    server.on('error', (error) => {
+      if ((error as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+        reject(new Error(`Port ${port} is already in use`));
+      } else {
+        reject(error);
+      }
+    });
+
+    // Store server reference for shutdown
+    (global as { __previewServer?: http.Server }).__previewServer = server;
+  });
+}
+
+function getContentType(ext: string): string {
+  const contentTypes: Record<string, string> = {
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+    '.eot': 'application/vnd.ms-fontobject',
+  };
+  return contentTypes[ext] || 'application/octet-stream';
 }
 
 function generateDefaultHtml(port: number, host: string): string {

@@ -14,7 +14,7 @@ interface SSEClient {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var sseClients: SSEClient[] | undefined;
 }
 

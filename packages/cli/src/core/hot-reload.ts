@@ -17,6 +17,7 @@ export class HotReload {
   private watchPaths: string[] = [];
   private ignored: string[] = [];
   private cache: Map<string, string> = new Map();
+  private cleanupHandlers: Array<() => void> = [];
 
   async start(options: HotReloadOptions): Promise<void> {
     const {
@@ -34,6 +35,9 @@ export class HotReload {
     if (this.watcher) {
       await this.stop();
     }
+
+    // Add signal handlers for cleanup
+    this.setupSignalHandlers();
 
     this.watcher = chokidar.watch(watchPaths, {
       ignored,
@@ -70,12 +74,37 @@ export class HotReload {
       });
   }
 
+  private setupSignalHandlers(): void {
+    // Prevent duplicate handlers
+    if (this.cleanupHandlers.length > 0) {
+      return;
+    }
+
+    const cleanup = () => {
+      this.stop().catch((err) => logger.error('Error during cleanup:', err));
+    };
+
+    process.on('SIGINT', cleanup);
+    process.on('SIGTERM', cleanup);
+
+    this.cleanupHandlers.push(() => {
+      process.off('SIGINT', cleanup);
+      process.off('SIGTERM', cleanup);
+    });
+  }
+
   async stop(): Promise<void> {
     if (this.watcher) {
       await this.watcher.close();
       this.watcher = null;
       logger.debug('Hot reload stopped');
     }
+
+    // Cleanup signal handlers
+    for (const handler of this.cleanupHandlers) {
+      handler();
+    }
+    this.cleanupHandlers = [];
   }
 
   clearFileCache(filePath: string): void {

@@ -1,7 +1,7 @@
 import prompts from 'prompts';
 import fs from 'fs-extra';
 import path from 'path';
-import { logger } from '../utils/index.js';
+import { logger, toKebabCase } from '../utils/index.js';
 
 export interface AddComponentOptions {
   type?: 'page' | 'common' | 'business';
@@ -104,11 +104,4 @@ export type { } from './${name}.vue';
 `;
 
   return { component, styles, index };
-}
-
-function toKebabCase(str: string): string {
-  return str
-    .replace(/([A-Z])/g, '-$1')
-    .toLowerCase()
-    .replace(/^-/, '');
 }

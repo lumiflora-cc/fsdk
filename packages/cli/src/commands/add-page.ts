@@ -1,7 +1,7 @@
 import prompts from 'prompts';
 import fs from 'fs-extra';
 import path from 'path';
-import { logger } from '../utils/index.js';
+import { logger, toPascalCase, toKebabCase } from '../utils/index.js';
 import fg from 'fast-glob';
 
 export interface AddPageOptions {
@@ -93,13 +93,6 @@ function generatePageTemplate(pageName: string, routerPath: string): { page: str
 `;
 
   return { page, styles };
-}
-
-function toPascalCase(str: string): string {
-  return str
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('');
 }
 
 export async function syncPageRoutes(cwd: string): Promise<void> {

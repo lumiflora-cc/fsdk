@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cac from 'cac';
-import { logger } from './utils/index.js';
+import { logger, enableDebugMode, resolveCwd } from './utils/index.js';
 import { configLoader, pluginSystem, templateEngine, hotReload } from './core/index.js';
 import {
   createApp,
@@ -14,6 +16,13 @@ import {
   generateCompletion,
 } from './commands/index.js';
 import type { PluginContext } from './core/index.js';
+
+// Set up CLI root for path resolution
+// cliEntryPath is /path/to/packages/cli/dist/index.js
+// We need to get /path/to/packages/cli
+const cliEntryPath = fileURLToPath(import.meta.url);
+const cliRoot = path.dirname(path.dirname(cliEntryPath));
+(global as { __cliRoot?: string }).__cliRoot = cliRoot;
 
 const cli = cac('fsdk');
 
@@ -35,9 +44,9 @@ cli
   .option('--no-git', 'Skip git initialization', { default: false })
   .option('--no-install', 'Skip dependency installation', { default: false })
   .action(async (projectName?: string, options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
     logger.info('Creating new application...');
 
     const context = createContext(cwd);
@@ -65,9 +74,9 @@ cli
   .option('--router-path <path>', 'Router path')
   .option('--page-name <name>', 'Page name')
   .action(async (options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
     logger.info('Adding new page...');
 
     const context = createContext(cwd);
@@ -92,9 +101,9 @@ cli
   .option('--name <name>', 'Component name')
   .option('--dir <dir>', 'Subdirectory')
   .action(async (options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
     logger.info('Adding new component...');
 
     const context = createContext(cwd);
@@ -119,9 +128,9 @@ cli
   .option('--type <type>', 'Store type (pinia|redux)', { default: 'pinia' })
   .option('--name <name>', 'Store name')
   .action(async (options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
     logger.info('Adding new store...');
 
     const context = createContext(cwd);
@@ -145,9 +154,9 @@ cli
   .option('--template <name>', 'Template name')
   .option('--force', 'Force sync without confirmation')
   .action(async (options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
     logger.info('Syncing template...');
 
     await syncTemplate(cwd, {
@@ -162,9 +171,9 @@ cli
   .option('--templates', 'Validate templates only')
   .option('--strict', 'Strict validation')
   .action(async (options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
 
     await validate(cwd, {
       config: options?.config as boolean,
@@ -180,9 +189,9 @@ cli
   .option('--open', 'Open browser')
   .option('--template <name>', 'Template name')
   .action(async (options?: Record<string, unknown>) => {
-    if (options?.debug) process.env.DEBUG = '1';
+    enableDebugMode(options?.debug as boolean);
 
-    const cwd = (options?.cwd as string) || process.cwd();
+    const cwd = resolveCwd(options?.cwd as string);
 
     await preview(cwd, {
       port: options?.port as number,

@@ -1,7 +1,7 @@
 import prompts from 'prompts';
 import fs from 'fs-extra';
 import path from 'path';
-import { logger } from '../utils/index.js';
+import { logger, toPascalCase } from '../utils/index.js';
 
 export interface AddStoreOptions {
   name?: string;
@@ -86,7 +86,8 @@ export const use${toPascalCase(name)}Store = defineStore('${name}', () => {
     loading.value = true;
     error.value = null;
     try {
-      // TODO: Implement data fetching
+      // Replace with actual API call when implementing real data fetching
+      // Example: data.value = await api.get('/endpoint');
       data.value = null;
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Unknown error';
@@ -216,11 +217,4 @@ describe('${name} slice', () => {
 `;
 
   return { store, test };
-}
-
-function toPascalCase(str: string): string {
-  return str
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('');
 }

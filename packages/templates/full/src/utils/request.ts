@@ -1,5 +1,5 @@
 // HTTP request wrapper
-import axios from 'axios'
+import axios, { type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios'
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
@@ -7,21 +7,21 @@ const request = axios.create({
 })
 
 request.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     // Add auth token or other headers
     return config
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error)
   }
 )
 
 request.interceptors.response.use(
-  (response) => {
+  (response: AxiosResponse) => {
     const { data } = response
     return data
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error)
   }
 )

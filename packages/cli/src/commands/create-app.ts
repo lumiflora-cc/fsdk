@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { logger } from '../utils/index.js';
 import { templateEngine } from '../core/index.js';
-import { execSync } from 'child_process';
+import { spawn } from 'child_process';
 import ora from 'ora';
 
 export interface CreateAppOptions {
@@ -52,7 +52,7 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
     if (git) {
       spinner.text = 'Initializing git repository...';
       try {
-        execSync('git init', { cwd: projectPath, stdio: 'ignore' });
+        await spawnCommand('git', ['init'], projectPath);
       } catch {
         logger.warning('Failed to initialize git repository');
       }
@@ -60,7 +60,7 @@ export async function createApp(cwd: string, options: CreateAppOptions = {}): Pr
 
     if (install) {
       spinner.text = `Installing dependencies with ${packageManager}...`;
-      await installDependencies(projectPath, packageManager);
+      await spawnCommand(packageManager, ['install'], projectPath);
     }
 
     spinner.succeed(`Project ${projectName} created successfully!`);
@@ -165,17 +165,22 @@ async function initializePackageJson(
   await fs.writeJson(path.resolve(projectPath, 'package.json'), packageJson, { spaces: 2 });
 }
 
-async function installDependencies(
-  projectPath: string,
-  packageManager: 'npm' | 'pnpm' | 'yarn' | 'bun'
-): Promise<void> {
-  const commands: Record<string, string[]> = {
-    pnpm: ['pnpm', 'install'],
-    npm: ['npm', 'install'],
-    yarn: ['yarn', 'install'],
-    bun: ['bun', 'install'],
-  };
+async function spawnCommand(cmd: string, args: string[], cwd: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn(cmd, args, {
+      cwd,
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+    });
 
-  const [cmd, ...args] = commands[packageManager];
-  execSync(`${cmd} ${args.join(' ')}`, { cwd: projectPath, stdio: 'inherit' });
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command ${cmd} ${args.join(' ')} exited with code ${code}`));
+      }
+    });
+
+    child.on('error', reject);
+  });
 }

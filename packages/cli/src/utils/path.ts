@@ -1,16 +1,52 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Get CLI root from global (set in index.ts)
+let _cliRoot: string | undefined;
+
 export function getCliRoot(): string {
-  return path.resolve(fileURLToPath(import.meta.url), '../..');
+  // Try to use the global __cliRoot set by index.ts
+  const globalRoot = (global as unknown as { __cliRoot?: string }).__cliRoot;
+  if (globalRoot) {
+    return globalRoot;
+  }
+
+  // Use cached value if available
+  if (_cliRoot) {
+    return _cliRoot;
+  }
+
+  // Fallback: calculate from current module location
+  // This happens when path.ts is imported before index.ts sets __cliRoot
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  const isDist = currentDir.endsWith('dist') || currentDir.includes(path.sep + 'dist' + path.sep);
+
+  if (isDist) {
+    // We're in dist/utils or dist/commands, need to go up to cli/
+    // path.dirname(dist/utils) = dist, path.dirname(dist) = cli
+    _cliRoot = path.dirname(path.dirname(currentDir));
+  } else {
+    const isSrc = currentDir.endsWith('src') || currentDir.includes(path.sep + 'src' + path.sep);
+    if (isSrc) {
+      _cliRoot = path.dirname(path.dirname(currentDir));
+    } else {
+      _cliRoot = currentDir;
+    }
+  }
+
+  return _cliRoot;
 }
 
 export function getTemplatesRoot(): string {
-  return path.resolve(getCliRoot(), '../templates');
+  // Templates are at packages/templates relative to the workspace root
+  const cliRoot = getCliRoot();
+  return path.resolve(cliRoot, '..', 'templates');
 }
 
 export function getPluginsRoot(): string {
-  return path.resolve(getCliRoot(), '../plugins');
+  // Plugins are at packages/plugins relative to the workspace root
+  const cliRoot = getCliRoot();
+  return path.resolve(cliRoot, '..', 'plugins');
 }
 
 export function resolveTemplatePath(templateName: string, ...segments: string[]): string {

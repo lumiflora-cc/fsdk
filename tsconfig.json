@@ -9,5 +9,13 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "packages/templates/**/node_modules",
+    "packages/templates/base/src",
+    "packages/templates/full/src",
+    "packages/templates/base/vite.config.ts",
+    "packages/templates/full/vite.config.ts"
+  ]
 }
