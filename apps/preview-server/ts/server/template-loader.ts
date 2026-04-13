@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const templatesBasePath = join(__dirname, '../../../packages/templates');
+const templatesBasePath = join(__dirname, '../../../../packages/templates');
 
 interface TemplateComponent {
   name: string;

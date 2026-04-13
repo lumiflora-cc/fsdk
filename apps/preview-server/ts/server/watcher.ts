@@ -4,7 +4,8 @@ import { dirname, join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const templatesPath = join(__dirname, '../../../packages/templates');
+// 从 apps/preview-server/ts/server/ 向上4层到项目根目录
+const templatesPath = join(__dirname, '../../../../packages/templates');
 
 let watcher: FSWatcher | null = null;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
