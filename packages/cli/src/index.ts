@@ -2,6 +2,7 @@
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import cac from 'cac';
 import { logger, enableDebugMode, resolveCwd } from './utils/index.js';
 import { configLoader, pluginSystem, templateEngine, hotReload } from './core/index.js';
@@ -24,10 +25,14 @@ const cliEntryPath = fileURLToPath(import.meta.url);
 const cliRoot = path.dirname(path.dirname(cliEntryPath));
 (global as { __cliRoot?: string }).__cliRoot = cliRoot;
 
+// Read package.json to get version
+const pkgPath = path.join(cliRoot, 'package.json');
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+
 const cli = cac('fsdk');
 
 cli
-  .version('0.1.0')
+  .version(pkg.version)
   .option('-h, --help', 'Show help')
   .option('--debug', 'Enable debug mode', { default: false })
   .option('--cwd <path>', 'Set working directory', { default: process.cwd() });
