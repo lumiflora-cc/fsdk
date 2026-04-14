@@ -37,14 +37,65 @@ fsdk validate
 # 预览模板
 fsdk preview --port 3000
 
-# 生成补全脚本
-fsdk completion bash    # 输出到 ~/.fsdk-completion.bash
-fsdk completion zsh     # 输出到 ~/.fsdk-completion.zsh
-fsdk completion fish    # 输出到 ~/.config/fish/completions/fsdk.fish
+# 生成并安装补全脚本
+fsdk completion bash    # 生成 bash 补全脚本
+fsdk completion zsh     # 生成 zsh 补全脚本
+fsdk completion fish    # 生成 fish 补全脚本
+
+# 自动安装到 shell 配置文件（推荐）
+fsdk completion bash --install
+fsdk completion zsh --install
 
 # 查看帮助
 fsdk --help
 fsdk create --help
+```
+
+## Shell 补全
+
+fsdk 支持 bash、zsh 和 fish 的命令行补全。安装后，输入 `fsdk ` 后按 Tab 键可自动补全命令和选项。
+
+### Bash（Linux / macOS）
+
+```bash
+# 方式一：自动安装（推荐）
+fsdk completion bash --install
+source ~/.bashrc
+
+# 方式二：手动安装
+fsdk completion bash
+echo 'source ~/.fsdk-completion.bash' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Zsh（macOS 默认）
+
+```bash
+# 方式一：自动安装（推荐）
+fsdk completion zsh --install
+source ~/.zshrc
+
+# 方式二：手动安装
+fsdk completion zsh
+# 添加以下内容到 ~/.zshrc：
+# fpath=("$HOME/.zsh/completion" $fpath)
+# autoload -U compinit && compinit
+source ~/.zshrc
+```
+
+> **注意**：如果使用 Oh My Zsh，可以将补全文件复制到 `~/.oh-my-zsh/completions/` 目录：
+> ```bash
+> mkdir -p ~/.oh-my-zsh/completions
+> fsdk completion zsh --output ~/.oh-my-zsh/completions/_fsdk
+> exec zsh
+> ```
+
+### Fish
+
+```bash
+fsdk completion fish
+# 补全文件自动生成到 ~/.config/fish/completions/fsdk.fish
+# 重启 fish 或打开新终端即可生效
 ```
 
 ## 模板
