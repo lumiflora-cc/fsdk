@@ -7,12 +7,14 @@
     "fsdk": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/postinstall.js"
   ],
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc && node scripts/fix-bin.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
     "cac": "^6.7.14",
