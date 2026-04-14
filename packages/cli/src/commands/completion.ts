@@ -55,14 +55,11 @@ _fsdk_completion() {
 complete -F _fsdk_completion fsdk
 `;
 
-const ZSH_COMPLETION = `#fsdk completion
-autoload -Uz compinit
-compinit 2>/dev/null
+const ZSH_COMPLETION = `#compdef fsdk
 
-# Define the completion function
 _fsdk() {
-  local -a _fsdk_cmds
-  _fsdk_cmds=(
+  local -a commands
+  commands=(
     'create:Create a new application'
     'add-page:Add a new page'
     'add-component:Add a new component'
@@ -80,7 +77,7 @@ _fsdk() {
 
   case "$state" in
     command)
-      _describe 'command' _fsdk_cmds
+      _describe 'command' commands
       ;;
     args)
       case $words[1] in
@@ -136,9 +133,6 @@ _fsdk() {
       ;;
   esac
 }
-
-# Register the completion function for fsdk command
-compdef _fsdk fsdk
 `;
 
 const FISH_COMPLETION = `# fish completion for fsdk
@@ -207,7 +201,12 @@ export async function generateCompletion(options: CompletionOptions = {}): Promi
     if (install && shell !== 'fish') {
       await installToShellRc(shell, outputPath);
     } else if (!install) {
-      if (shell !== 'fish') {
+      if (shell === 'zsh') {
+        const completionDir = path.dirname(outputPath);
+        logger.info(`Add the following lines to your ~/.zshrc:`);
+        logger.info(`  fpath=("${completionDir}" $fpath)`);
+        logger.info(`  autoload -U compinit && compinit`);
+      } else if (shell !== 'fish') {
         logger.info(`Add the following line to your shell configuration:`);
         logger.info(`  source ${outputPath}`);
       } else {
@@ -224,12 +223,16 @@ export async function generateCompletion(options: CompletionOptions = {}): Promi
 async function installToShellRc(shell: ShellType, completionPath: string): Promise<void> {
   const home = process.env.HOME || '';
   let rcFile = '';
-  let sourceLine = `source ${completionPath}`;
+  let sourceLine = '';
 
   if (shell === 'bash') {
     rcFile = path.resolve(home, '.bashrc');
+    sourceLine = `source ${completionPath}`;
   } else if (shell === 'zsh') {
     rcFile = path.resolve(home, '.zshrc');
+    // For zsh, add to fpath and compinit
+    const completionDir = path.dirname(completionPath);
+    sourceLine = `# Add fsdk completion to fpath\nfpath=("${completionDir}" $fpath)\nautoload -U compinit && compinit`;
   } else {
     logger.warning(`--install is not supported for fish shell yet`);
     return;
@@ -241,13 +244,13 @@ async function installToShellRc(shell: ShellType, completionPath: string): Promi
       rcContent = await fs.readFile(rcFile, 'utf-8');
     }
 
-    const pattern = shell === 'bash' ? /\.fsdk-completion/ : 'fsdk-completion';
+    const pattern = shell === 'bash' ? /\.fsdk-completion/ : 'fsdk completion';
     if (rcContent.includes(pattern as string)) {
       logger.info(`Completion already installed in ${rcFile}`);
       return;
     }
 
-    await fs.appendFile(rcFile, `\n# fsdk completion\n${sourceLine}\n`);
+    await fs.appendFile(rcFile, `\n# ${shell} fsdk completion\n${sourceLine}\n`);
     logger.success(`Completion installed to ${rcFile}`);
     logger.info(`Run "source ${rcFile}" or restart your shell to apply`);
   } catch (error) {
@@ -269,7 +272,8 @@ function getDefaultOutputPath(shell: ShellType): string {
     case 'bash':
       return path.resolve(home, '.fsdk-completion.bash');
     case 'zsh':
-      return path.resolve(home, '.fsdk-completion.zsh');
+      // zsh completion must be in fpath directory with _command name
+      return path.resolve(home, '.zsh', 'completion', '_fsdk');
     case 'fish':
       return path.resolve(home, '.config', 'fish', 'completions', 'fsdk.fish');
   }
