@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import VueRouter from 'unplugin-vue-router/vite'
+import Pages from 'vite-plugin-pages'
+import Layouts from 'vite-plugin-vue-layouts'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import Icons from 'unplugin-icons/vite'
@@ -9,9 +10,13 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [
-    VueRouter({
-      routesFolder: 'src/views',
+    Pages({
+      dirs: 'src/pages',
       importMode: 'sync'
+    }),
+    Layouts({
+      layoutsDirs: 'src/layouts',
+      defaultLayout: 'default'
     }),
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
