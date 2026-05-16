@@ -1,6 +1,6 @@
 {
   "name": "@lumiflora/fsdk",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Vue 3 前端项目脚手架 CLI 工具，快速创建包含最佳技术栈的项目骨架。",
   "main": "./dist/index.js",
