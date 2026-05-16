@@ -23,7 +23,7 @@ import type {
 
 const request: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API || '/api',
-  timeout: 10000,
+  timeout: Number(import.meta.env.VITE_APP_TIMEOUT) || 30000,
   headers: {
     'Content-Type': 'application/json'
   }

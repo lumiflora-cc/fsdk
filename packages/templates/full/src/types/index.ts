@@ -1,6 +1,6 @@
 // HTTP 请求/响应类型定义
 
-import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import type { InternalAxiosRequestConfig } from 'axios'
 
 // ============ 通用响应结构 ============
 

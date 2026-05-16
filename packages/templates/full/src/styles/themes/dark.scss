@@ -1,0 +1,83 @@
+/**
+ * 暗色主题变量
+ */
+
+html.dark {
+  // Primary
+  --el-color-primary: #409eff;
+  --el-color-primary-light-3: #79bbff;
+  --el-color-primary-light-5: #a0cfff;
+  --el-color-primary-light-7: #c6e2ff;
+  --el-color-primary-light-8: #d9ecff;
+  --el-color-primary-light-9: #ecf5ff;
+  --el-color-primary-dark-2: #337ecc;
+
+  // Success
+  --el-color-success: #67c23a;
+  --el-color-success-light-3: #95d475;
+  --el-color-success-light-5: #b3e19d;
+  --el-color-success-light-7: #d1f2d1;
+  --el-color-success-light-8: #e1f3d8;
+  --el-color-success-light-9: #f0f9eb;
+  --el-color-success-dark-2: #529b2e;
+
+  // Warning
+  --el-color-warning: #e6a23c;
+  --el-color-warning-light-3: #eecc7a;
+  --el-color-warning-light-5: #f3d19e;
+  --el-color-warning-light-7: #f8e3c5;
+  --el-color-warning-light-8: #fbeccd;
+  --el-color-warning-light-9: #fdf6ec;
+  --el-color-warning-dark-2: #b37b4d;
+
+  // Danger
+  --el-color-danger: #f56c6c;
+  --el-color-danger-light-3: #f89898;
+  --el-color-danger-light-5: #fab6b6;
+  --el-color-danger-light-7: #fcd3d3;
+  --el-color-danger-light-8: #fde2e2;
+  --el-color-danger-light-9: #fef0f0;
+  --el-color-danger-dark-2: #c45656;
+
+  // Info
+  --el-color-info: #909399;
+  --el-color-info-light-3: #b1b3b8;
+  --el-color-info-light-5: #c8c9cc;
+  --el-color-info-light-7: #dedfe0;
+  --el-color-info-light-8: #e9e9eb;
+  --el-color-info-light-9: #f4f4f5;
+  --el-color-info-dark-2: #6b6b6b;
+
+  // Border
+  --el-border-color-base: #4c4c4c;
+  --el-border-color-light: #606266;
+  --el-border-color-lighter: #707070;
+  --el-border-color-extra-light: #808080;
+  --el-border-radius-base: 4px;
+  --el-border-radius-small: 2px;
+  --el-border-radius-round: 20px;
+  --el-border-radius-circle: 50%;
+
+  // Fill
+  --el-fill-base: #1d1e1f;
+  --el-fill-color: #2a2a2a;
+  --el-fill-color-light: #333333;
+  --el-fill-color-lighter: #3a3a3a;
+  --el-fill-color-blank: #1d1e1f;
+
+  // Text
+  --el-text-color-primary: #e5eaf3;
+  --el-text-color-regular: #cfd3dc;
+  --el-text-color-secondary: #a6a9ad;
+  --el-text-color-placeholder: #6e7075;
+  --el-text-color-disabled: #6e7075;
+
+  // Background
+  --el-bg-color: #1d1e1f;
+  --el-bg-color-page: #121212;
+  --el-bg-color-overlay: #1d1e1f;
+
+  // Box Shadow
+  --el-box-shadow-base: 0 2px 12px 0 rgba(0, 0, 0, 0.4);
+  --el-box-shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.3);
+}

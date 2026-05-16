@@ -27,8 +27,11 @@ declare module '*.scss' {
 interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string
   readonly VITE_APP_BASE_API: string
+  readonly VITE_APP_TIMEOUT: string
+  readonly VITE_APP_LOCALE: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
